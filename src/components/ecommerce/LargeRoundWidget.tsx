@@ -9,10 +9,12 @@ interface RoundWidgetProps {
   title: string;
   value: number;
   units: string;
+  maxValue: number;
 }
 
-export default function LargeRoundWidget({ title, value, units }: RoundWidgetProps) {
-  const series = [value];
+export default function LargeRoundWidget({ title, value, units, maxValue }: RoundWidgetProps) {
+  const currentValue = value; // Nilai aktual yang ingin ditampilkan (0-300)
+  const series = [(currentValue / maxValue) * 100];
   const options: ApexOptions = {
     colors: ["#465FFF"],
     chart: {
@@ -45,7 +47,7 @@ export default function LargeRoundWidget({ title, value, units }: RoundWidgetPro
             offsetY: -40,
             color: "#1D2939",
             formatter: function (val) {
-              return val + "";
+              return ((val / 100) * maxValue).toFixed(2);
             },
           },
         },
@@ -59,6 +61,10 @@ export default function LargeRoundWidget({ title, value, units }: RoundWidgetPro
       lineCap: "round",
     },
     labels: ["Progress"],
+    yaxis: {
+      min: 0,
+      max: 300,
+    },
   };
   const [isOpen, setIsOpen] = useState(false);
 

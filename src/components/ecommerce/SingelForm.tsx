@@ -5,9 +5,10 @@ interface NumWidgetProps {
   value: number;
   units: string;
   storageKey: string;
+  onValueChange?: (val: number) => void;
 }
 
-export default function SingleForm({ title, value, units, storageKey }: NumWidgetProps) {
+export default function SingleForm({ title, value, units, storageKey, onValueChange }: NumWidgetProps) {
   const [currentValue, setCurrentValue] = useState(value);
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value.toString());
@@ -33,8 +34,11 @@ export default function SingleForm({ title, value, units, storageKey }: NumWidge
     e.preventDefault();
     const numValue = Number(inputValue);
     if (!isNaN(numValue)) {
-      setCurrentValue(numValue);
-      localStorage.setItem(storageKey, numValue.toString());
+    setCurrentValue(numValue);
+    localStorage.setItem(storageKey, numValue.toString());
+    if (onValueChange) {
+      onValueChange(numValue); // ✅ Trigger update ke parent
+    }
     }
     setIsEditing(false);
   };

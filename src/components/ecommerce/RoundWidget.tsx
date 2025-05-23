@@ -8,11 +8,13 @@ import { MoreDotIcon } from "../../icons";
 interface RoundWidgetProps {
   title: string;
   value: number;
-  units: string;
+  units: string
+  maxValue: number;
 }
 
-export default function RoundWidget({ title, value, units }: RoundWidgetProps) {
-  const series = [value];
+export default function RoundWidget({ title, value, units, maxValue }: RoundWidgetProps) {
+  const currentValue = value; // Nilai aktual yang ingin ditampilkan (0-300)
+  const series = [(currentValue / maxValue) * 100];
   const options: ApexOptions = {
     colors: ["#465FFF"],
     chart: {
@@ -45,7 +47,7 @@ export default function RoundWidget({ title, value, units }: RoundWidgetProps) {
             offsetY: -40,
             color: "#1D2939",
             formatter: function (val) {
-              return val + "";
+               return ((val / 100) * maxValue).toFixed(2);
             },
           },
         },

@@ -5,9 +5,55 @@ import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
+import Badge from "../components/ui/badge/Badge";
+import { getLatestData, latestAntares } from "../pages/Dashboard/GetLatestData";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
+  const [data, setData] = useState<latestAntares | null>(null);
+  const [stateServer, setStateServer] = useState<true | false>(false);
+  const [stateDevice, setStateDevice] = useState<true | false>(false);
+
+  useEffect(() => {
+    let lastUpdate: number | null = null;
+
+    const fetchData = async () => {
+      try {
+        const latest = await getLatestData();
+        setData(latest);
+        setStateServer(true);
+
+        // Update waktu terakhir data dikirim
+        lastUpdate = new Date(latest.con.time_send_from_gateway).getTime();
+      } catch (error) {
+        console.error("Gagal fetch:", error);
+        setStateServer(false);
+      }
+    };
+
+    fetchData(); // initial fetch
+
+    // Fetch data setiap 2 detik
+    const intervalFetch = setInterval(fetchData, 2000);
+
+    // Cek device offline tiap 5 detik
+    const intervalCheckDevice = setInterval(() => {
+      if (lastUpdate) {
+        const now = Date.now();
+        const diff = now - lastUpdate;
+        if (diff > 25000) {
+          setStateDevice(false);
+        } else {
+          setStateDevice(true);
+        }
+      }
+    }, 5000);
+
+    return () => {
+      clearInterval(intervalFetch);
+      clearInterval(intervalCheckDevice);
+    };
+  }, []);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
 
@@ -161,6 +207,11 @@ const AppHeader: React.FC = () => {
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
             {/* <!-- Dark Mode Toggler --> */}
+            <div className="hidden sm:flex">
+              {stateServer? <Badge color="success">Server:  Online</Badge> : <Badge color="error">Server:  Offline</Badge>}
+              {stateDevice? <Badge color="success">Device:  Online</Badge> : <Badge color="error">Device:  Offline</Badge>}
+            </div>
+            
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
             <NotificationDropdown />

@@ -15,4 +15,9 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    proxy: {
+      '/api': 'https://platform.antares.id'
+    }
+  }
 });
